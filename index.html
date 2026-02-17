@@ -139,6 +139,86 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
 /* SONGS LIST */
 .song { padding: 8px; border: 2px solid #1e3a8a; margin-top: 6px; font-size: 11px; }
 .song:hover { background: #1e3a8a; cursor: pointer; }
+
+/* PROFILE MODAL */
+.profile-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 2000;
+}
+
+.profile-modal.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.profile-card {
+  width: 340px;
+  background: #111827;
+  border: 2px solid #1e3a8a;
+  border-radius: 8px;
+  overflow: hidden;
+  animation: profileIn 0.25s ease;
+}
+
+@keyframes profileIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.profile-banner {
+  height: 80px;
+  background: linear-gradient(135deg,#1e3a8a,#2563eb);
+}
+
+.profile-avatar {
+  width: 80px;
+  height: 80px;
+  border: 4px solid #111827;
+  border-radius: 50%;
+  margin-top: -40px;
+  margin-left: 16px;
+  background: black;
+}
+
+.profile-content {
+  padding: 16px;
+}
+
+.profile-display {
+  font-size: 16px;
+}
+
+.profile-username {
+  font-size: 11px;
+  opacity: 0.6;
+}
+
+.profile-pronouns {
+  font-size: 11px;
+  margin-top: 4px;
+  color: #93c5fd;
+}
+
+.profile-section {
+  margin-top: 12px;
+  font-size: 12px;
+}
+
+}
+
+.clickable-avatar:hover {
+  transform: scale(1.08);
+  filter: brightness(1.2);
+}
+
 </style>
 </head>
 <body>
@@ -191,6 +271,15 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
 
 <label>PROFILE IMAGE</label>
 <input type="file" accept="image/*" id="pfpUpload">
+
+<label>DISPLAY NAME</label>
+<input id="displayNameInput" placeholder="Enter display name">
+
+<label>PRONOUNS</label>
+<input id="pronounsInput" placeholder="e.g. he/him">
+
+<label>BIO</label>
+<input id="bioInput" placeholder="Write something cool...">
 
 <button class="tab-btn" onclick="saveProfile()">SAVE PROFILE</button>
 </div>
@@ -293,14 +382,28 @@ messageInput.addEventListener("keydown", e=>{ if(e.key==="Enter"&&!e.shiftKey){ 
 
 function timeNow(){ return new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}); }
 
-function addMessage(name,text,img,time,key){
+function addMessage(name,text,img,time,key,data){
 const m=document.createElement("div");
 const side=name===username?"user":"other";
 m.className=`message ${side}`;
 m.dataset.key=key;
 let ownerStar = (name==="wolf")?'<span class="owner-star">★</span>':'';
-let bubbleHTML = `${side==="other"?`<img src="${img}">`:``}<div class="bubble"><div class="name">${name}${ownerStar}</div>${text}<div class="time">${time}</div></div>${side==="user"?`<img src="${img}">`:``}`;
-m.innerHTML=bubbleHTML;
+let bubbleHTML = `
+${side==="other"?`<img src="${img}" class="clickable-avatar">`:``}
+<div class="bubble">
+  <div class="name">${name}${ownerStar}</div>
+  ${text}
+  <div class="time">${time}</div>
+</div>
+${side==="user"?`<img src="${img}" class="clickable-avatar">`:``}
+`;
+
+m.innerHTML = bubbleHTML;
+
+m.querySelectorAll(".clickable-avatar").forEach(avatar=>{
+  avatar.onclick = () => openProfile(data);
+});
+
 if(side==="user"||isOwner){
 const delBtn=document.createElement("button");
 delBtn.textContent="🗑";
@@ -321,12 +424,16 @@ setTimeout(()=>{ chatLoading.style.display="none"; },500);
 window.sendMessage=()=>{
 if(!messageInput.value.trim()) return;
 push(messagesRootRef,{
-name: username,
-text: messageInput.value,
-img: userPFP,
-time: timeNow(),
-ts: Date.now()
+  name: username,
+  displayName: localStorage.getItem("displayName") || username,
+  pronouns: localStorage.getItem("pronouns") || "",
+  bio: localStorage.getItem("bio") || "",
+  text: messageInput.value,
+  img: userPFP,
+  time: timeNow(),
+  ts: Date.now()
 });
+
 messageInput.value="";
 };
 
@@ -334,12 +441,13 @@ onChildAdded(messagesQuery, snap => {
   const m = snap.val();
 
   addMessage(
-    m.name || "PLAYER",
-    m.text || "",
-    m.img || "https://via.placeholder.com/36",
-    m.time || timeNow(),
-    snap.key
-  );
+  m.name || "PLAYER",
+  m.text || "",
+  m.img || "https://via.placeholder.com/36",
+  m.time || timeNow(),
+  snap.key,
+  m   
+);
 
   // 🔔 Update page title notifications
   if (!windowFocused && m.name !== username) {
@@ -358,16 +466,32 @@ document.getElementById(id).classList.add("active");
 };
 
 /* Profile */
-window.saveProfile=()=>{
-const usernameInput=document.getElementById("usernameInput");
-if(usernameInput.value.trim()){ username=usernameInput.value.trim(); localStorage.setItem("username",username); }
-const pfpUpload=document.getElementById("pfpUpload");
-if(pfpUpload.files[0]){
-const reader=new FileReader();
-reader.onload=e=>{ userPFP=e.target.result; localStorage.setItem("pfp",userPFP); };
-reader.readAsDataURL(pfpUpload.files[0]);
-}
-alert("Profile saved!");
+window.saveProfile = () => {
+  const usernameInput = document.getElementById("usernameInput");
+  const displayNameInput = document.getElementById("displayNameInput");
+  const pronounsInput = document.getElementById("pronounsInput");
+  const bioInput = document.getElementById("bioInput");
+
+  if (usernameInput.value.trim()) {
+    username = usernameInput.value.trim();
+    localStorage.setItem("username", username);
+  }
+
+  localStorage.setItem("displayName", displayNameInput.value.trim());
+  localStorage.setItem("pronouns", pronounsInput.value.trim());
+  localStorage.setItem("bio", bioInput.value.trim());
+
+  const pfpUpload = document.getElementById("pfpUpload");
+  if (pfpUpload.files[0]) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      userPFP = e.target.result;
+      localStorage.setItem("pfp", userPFP);
+    };
+    reader.readAsDataURL(pfpUpload.files[0]);
+  }
+
+  alert("Profile saved!");
 };
 
 /* Owner Login */
@@ -427,11 +551,39 @@ playBtn.onclick=()=>{ if(audioElem.paused){ audioElem.play(); playBtn.textConten
 nextBtn.onclick=()=>{ if(songs.length===0) return; currentIndex=(currentIndex+1)%songs.length; audioElem.src=songs[currentIndex].url; audioElem.play(); };
 prevBtn.onclick=()=>{ if(songs.length===0) return; currentIndex=(currentIndex-1+songs.length)%songs.length; audioElem.src=songs[currentIndex].url; audioElem.play(); };
 loopBtn.onclick=()=>{ loop=!loop; loopBtn.style.background=loop?"#2563eb":"#1e3a8a"; };
-</script>
 
+function openProfile(data){
+  if(!data) return;
+
+  document.getElementById("profileAvatar").src = data.img;
+  document.getElementById("profileDisplayName").textContent = data.displayName || data.name;
+  document.getElementById("profileUsername").textContent = "@" + data.name;
+  document.getElementById("profilePronouns").textContent = data.pronouns || "";
+  document.getElementById("profileBio").textContent = data.bio || "No bio set.";
+
+  document.getElementById("profileModal").classList.add("active");
+}
+
+document.getElementById("profileModal").addEventListener("click", e=>{
+  if(e.target.id === "profileModal"){
+    e.currentTarget.classList.remove("active");
+  }
+});
+</script>
+<div id="profileModal" class="profile-modal">
+  <div class="profile-card">
+    <div class="profile-banner"></div>
+    <img id="profileAvatar" class="profile-avatar">
+    <div class="profile-content">
+      <div id="profileDisplayName" class="profile-display"></div>
+      <div id="profileUsername" class="profile-username"></div>
+      <div id="profilePronouns" class="profile-pronouns"></div>
+      <div class="profile-section">
+        <h4>ABOUT ME</h4>
+        <p id="profileBio"></p>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
-
-
-
-
