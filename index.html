@@ -241,6 +241,28 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
 </head>
 <body>
 
+<!-- NOW PLAYING PANEL -->
+<div id="nowPlayingPanel" style="
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    background: #020617;
+    border: 2px solid #1e3a8a;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Minecraftia', monospace;
+    font-size: 12px;
+    color: #c7d2fe;
+    display: none;
+    z-index: 1500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+">
+    <img id="nowPlayingCover" src="" style="width:36px; height:36px; border-radius:4px; display:none;">
+    <span id="nowPlayingText"></span>
+</div>
+
 <button class="settings-btn" onclick="toggleSettings()">⚙</button>
 
 <div class="settings-panel" id="settingsPanel">
@@ -748,9 +770,21 @@ async function updateLastFmPresence() {
   if(!username) return;
 
   const track = await getNowPlaying(username);
+  const nowPanel = document.getElementById("nowPlayingPanel");
+  const nowText = document.getElementById("nowPlayingText");
+  const nowCover = document.getElementById("nowPlayingCover");
 
-  const html = track && track.nowPlaying
-    ? `
+  if(track && track.nowPlaying){
+    nowPanel.style.display = "flex";
+    nowText.textContent = `${track.title} — ${track.artist}`; // Song — Artist
+    if(track.cover){
+      nowCover.src = track.cover;
+      nowCover.style.display = "block";
+    } else {
+      nowCover.style.display = "none";
+    }
+
+    const html = `
       <div style="display:flex; gap:10px; align-items:center; margin-top:10px;">
         ${track.cover ? `<img src="${track.cover}" style="width:50px; height:50px; border-radius:6px;">` : ""}
         <div>
@@ -758,11 +792,15 @@ async function updateLastFmPresence() {
           <div style="font-size:10px; opacity:0.6;">${track.artist}</div>
         </div>
       </div>
-    `
-    : `<div style="font-size:11px; opacity:0.5;">not listening to anything</div>`;
+    `;
+    lastFmNowPlaying.innerHTML = html;
+    profileMusic.innerHTML = html;
 
-  lastFmNowPlaying.innerHTML = html;
-  profileMusic.innerHTML = html;
+  } else {
+    nowPanel.style.display = "none";
+    lastFmNowPlaying.innerHTML = `<div style="font-size:11px; opacity:0.5;">not listening to anything</div>`;
+    profileMusic.innerHTML = `<div style="font-size:11px; opacity:0.5;">not listening to anything</div>`;
+  }
 }
 
 // Refresh every 5 seconds
