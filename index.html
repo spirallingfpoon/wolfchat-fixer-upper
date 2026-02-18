@@ -1,5 +1,4 @@
-
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -660,7 +659,7 @@ const spotifyStatus = document.getElementById("spotifyStatus");
 const spotifyNowPlaying = document.getElementById("spotifyNowPlaying");
 
 const clientId = "4b25324c074241078829b7f44c202673";
-const redirectUri = window.location.origin + "/"; // redirect back to same page
+const redirectUri = window.location.origin + "/redirect.html"; // redirect back to same page
 const scopes = "user-read-currently-playing";
 
 let spotifyToken = null;
@@ -771,3 +770,4 @@ async function fetchNowPlaying(){
 </div>
 </body>
 </html>
+
