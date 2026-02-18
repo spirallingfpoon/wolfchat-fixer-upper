@@ -659,24 +659,17 @@ const spotifyStatus = document.getElementById("spotifyStatus");
 const spotifyNowPlaying = document.getElementById("spotifyNowPlaying");
 
 const clientId = "4b25324c074241078829b7f44c202673";
-const redirectUri = window.location.origin + "/redirect.html"; // redirect back to same page
+const redirectUri = window.location.href.split("#")[0]; // current page URL without hash
 const scopes = "user-read-currently-playing";
 
 let spotifyToken = null;
 
 connectSpotifyBtn.onclick = () => {
     const authUrl = `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=token&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${encodeURIComponent(scopes)}`;
-    
-    // Open a new window for Spotify login
-    const width = 500, height = 600;
-    const left = (screen.width / 2) - (width / 2);
-    const top = (screen.height / 2) - (height / 2);
 
-    const spotifyWindow = window.open(
-        authUrl,
-        "SpotifyLogin",
-        `width=${width},height=${height},top=${top},left=${left}`
-    );
+    // Redirect current page to Spotify login
+    window.location.href = authUrl;
+};
 
     // Poll to check when the window closes and get the token from localStorage
     const tokenInterval = setInterval(() => {
@@ -703,7 +696,7 @@ if(window.location.hash){
     if(hash.access_token){
         spotifyToken = hash.access_token;
         spotifyStatus.textContent = "✅ Connected!";
-        window.history.replaceState({}, document.title, "/"); // clean URL
+        window.history.replaceState({}, document.title, window.location.href.split("#")[0]);
         fetchNowPlaying();
         setInterval(fetchNowPlaying, 5000); // update every 5s
     }
@@ -770,4 +763,5 @@ async function fetchNowPlaying(){
 </div>
 </body>
 </html>
+
 
