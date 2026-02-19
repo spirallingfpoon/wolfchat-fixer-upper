@@ -295,9 +295,17 @@ Not connected.
 <input id="bioInput" placeholder="Write something cool...">
 <button class="tab-btn" id="setBioBtn">SET BIO</button>
 
+<label>STATUS</label>
+<input id="statusInput" placeholder="What's on your mind?">
+<button class="tab-btn" id="setStatusBtn">SET STATUS</button>
+
 <label>BANNER IMAGE</label>
 <input type="file" accept="image/*" id="bannerUpload">
 <button class="tab-btn" id="setBannerBtn">SET BANNER</button>
+
+<label>PROFILE COLOR</label>
+<input type="color" id="colorPicker" value="#1e3a8a">
+<button class="tab-btn" id="setColorBtn">SET COLOR</button>
 
 </div>
 
@@ -457,8 +465,11 @@ window.sendMessage = () => {
   displayName: localStorage.getItem("displayName") || username,
   pronouns: localStorage.getItem("pronouns") || "",
   bio: localStorage.getItem("bio") || "",
+  bio: localStorage.getItem("bio") || "",
+  status: localStorage.getItem("status") || "",
   lastFmUser: localStorage.getItem("lastFmUser") || null,
   banner: localStorage.getItem("banner") || null,
+  profileColor: localStorage.getItem("profileColor") || "#1e3a8a",
   text: messageInput.value,
   img: userPFP,
   time: timeNow(),
@@ -605,6 +616,18 @@ document.getElementById("setBannerBtn").onclick = () => {
   reader.readAsDataURL(file);
 };
 
+document.getElementById("setColorBtn").onclick = () => {
+  const val = document.getElementById("colorPicker").value;
+  localStorage.setItem("profileColor", val);
+  alert("Profile color updated.");
+};
+
+document.getElementById("setStatusBtn").onclick = () => {
+  const val = document.getElementById("statusInput").value.trim();
+  localStorage.setItem("status", val);
+  alert("Status updated.");
+};
+
 async function openProfile(data){
   if(!data) return;
 
@@ -619,8 +642,10 @@ if (data.banner) {
   document.getElementById("profileDisplayName").textContent = data.displayName || data.name;
   document.getElementById("profileUsername").textContent = "@" + data.name;
   document.getElementById("profilePronouns").textContent = data.pronouns || "";
+  document.getElementById("profileStatus").textContent = data.status || "";
   document.getElementById("profileBio").textContent = data.bio || "No bio set.";
-
+  document.querySelector(".profile-card").style.borderColor =
+  data.profileColor || "#1e3a8a";
 
   const musicSection = document.getElementById("profileMusic");
   const profileCard = document.querySelector(".profile-card");
@@ -816,6 +841,7 @@ window.addEventListener("DOMContentLoaded", () => {
       <div id="profileDisplayName" class="profile-display"></div>
       <div id="profileUsername" class="profile-username"></div>
       <div id="profilePronouns" class="profile-pronouns"></div>
+      <div id="profileStatus" style="font-size:11px; margin-top:6px; color:#60a5fa;"></div>
       <div class="profile-section">
         <h4>ABOUT ME</h4>
         <p id="profileBio"></p>
