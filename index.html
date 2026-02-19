@@ -766,43 +766,6 @@ async function updateLastFmPresence() {
 // Refresh every 5 seconds
 setInterval(updateLastFmPresence, 5000);
 
-// Show Last.fm track in chat as a "Now Playing" message (optional)
-function showNowPlayingInChat(track) {
-  if(!track || !track.nowPlaying) return;
-
-  const html = `
-    <div class="message other">
-      <img src="${userPFP}" style="width:36px; height:36px; border-radius:4px;">
-      <div class="bubble">
-        <div class="name">${username} 🎵</div>
-        ${track.cover ? `<img src="${track.cover}" style="width:36px; height:36px; border-radius:4px; margin:4px 0;">` : ""}
-        <div style="font-size:12px;">${track.title} — ${track.artist}</div>
-      </div>
-    </div>
-  `;
-  chatBox.insertAdjacentHTML("beforeend", html);
-  chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-// Refresh in chat every 10 seconds
-setInterval(async () => {
-  const username = localStorage.getItem("lastFmUser");
-  if(!username) return;
-  
-  let track;
-  try {
-    track = await getNowPlaying(username);
-  } catch(e) { return; }
-
-  if(track?.nowPlaying){
-    const trackId = `${track.artist}-${track.title}`;
-    if(trackId !== lastNowPlaying){
-      lastNowPlaying = trackId;
-      showNowPlayingInChat(track);
-    }
-  }
-}, 10000);
-
 // On page load, restore if user had connected before
 window.addEventListener("DOMContentLoaded", () => {
   const username = localStorage.getItem("lastFmUser");
@@ -835,3 +798,4 @@ window.addEventListener("DOMContentLoaded", () => {
 </div>
 </body>
 </html>
+
