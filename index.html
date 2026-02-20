@@ -180,11 +180,14 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
 }
 
 .profile-card {
-  width: 340px;
+  width: auto;                 /* allow it to grow (should fix ur profile lol)*/
+  min-width: 340px;            /* default size */
+  max-width: 90vw;             /* prevent from going off screen */
   background: #111827;
   border: 2px solid #1e3a8a;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-wrap: break-word;   /* wrap long words */
+  word-break: break-word;      /* force break if needed */
   animation: profileIn 0.25s ease;
   transition: box-shadow 0.3s ease;
 }
@@ -933,5 +936,3 @@ window.addEventListener("DOMContentLoaded", () => {
 </div>
 </body>
 </html>
-
-
