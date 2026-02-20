@@ -311,6 +311,11 @@ Not connected.
 <input type="color" id="colorPicker" value="#1e3a8a">
 <button class="tab-btn" id="setColorBtn">SET COLOR</button>
 
+<label>PROFILE LAYOUT BACKUP</label>
+<button class="tab-btn" id="exportLayoutBtn">EXPORT LAYOUT</button>
+<input type="file" accept="application/json" id="importLayoutUpload">
+<button class="tab-btn" id="importLayoutBtn">IMPORT LAYOUT</button>
+
 </div>
 
 <!-- UPDATES TAB -->
@@ -622,6 +627,80 @@ document.getElementById("setColorBtn").onclick = () => {
   alert("Profile color updated.");
 };
 
+function getProfileLayout() {
+  return {
+    username: localStorage.getItem("username") || "",
+    displayName: localStorage.getItem("displayName") || "",
+    pronouns: localStorage.getItem("pronouns") || "",
+    bio: localStorage.getItem("bio") || "",
+    status: localStorage.getItem("status") || "",
+    banner: localStorage.getItem("banner") || "",
+    profileColor: localStorage.getItem("profileColor") || "#1e3a8a",
+    pfp: localStorage.getItem("pfp") || "",
+    lastFmUser: localStorage.getItem("lastFmUser") || ""
+  };
+}
+
+function hydrateProfileFields(layout) {
+  document.getElementById("usernameInput").value = layout.username || "";
+  document.getElementById("displayNameInput").value = layout.displayName || "";
+  document.getElementById("pronounsInput").value = layout.pronouns || "";
+  document.getElementById("bioInput").value = layout.bio || "";
+  document.getElementById("statusInput").value = layout.status || "";
+  document.getElementById("colorPicker").value = layout.profileColor || "#1e3a8a";
+  document.getElementById("lastFmUsername").value = layout.lastFmUser || "";
+}
+
+document.getElementById("exportLayoutBtn").onclick = () => {
+  const layout = getProfileLayout();
+  const payload = JSON.stringify(layout, null, 2);
+  const blob = new Blob([payload], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const downloadLink = document.createElement("a");
+  downloadLink.href = url;
+  downloadLink.download = `${layout.username || "wolfchat"}-layout.json`;
+  document.body.appendChild(downloadLink);
+  downloadLink.click();
+  downloadLink.remove();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById("importLayoutBtn").onclick = () => {
+  const file = document.getElementById("importLayoutUpload").files[0];
+  if (!file) return alert("Select a layout JSON file first.");
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const layout = JSON.parse(e.target.result);
+
+      const fields = ["username", "displayName", "pronouns", "bio", "status", "banner", "profileColor", "pfp", "lastFmUser"];
+      fields.forEach(field => {
+        if (typeof layout[field] === "string") {
+          localStorage.setItem(field, layout[field]);
+        }
+      });
+
+      username = localStorage.getItem("username") || "PLAYER";
+      userPFP = localStorage.getItem("pfp") || "https://via.placeholder.com/36";
+
+      hydrateProfileFields(getProfileLayout());
+      updateLastFmPresence();
+
+      const restoredLastFmUser = localStorage.getItem("lastFmUser");
+      lastFmStatus.textContent = restoredLastFmUser
+        ? `Connected as ${restoredLastFmUser}`
+        : "Not connected.";
+
+      alert("Layout imported successfully.");
+    } catch {
+      alert("Invalid layout file.");
+    }
+  };
+
+  reader.readAsText(file);
+};
+
 document.getElementById("setStatusBtn").onclick = () => {
   const val = document.getElementById("statusInput").value.trim();
   localStorage.setItem("status", val);
@@ -830,6 +909,8 @@ window.addEventListener("DOMContentLoaded", () => {
     lastFmStatus.textContent = `Connected as ${username}`;
     updateLastFmPresence();
   }
+
+  hydrateProfileFields(getProfileLayout());
 });
 
 </script>
