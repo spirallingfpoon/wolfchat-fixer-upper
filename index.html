@@ -313,12 +313,11 @@ Not connected.
 <div class="tab-content" id="updates">
   <h3 style="margin-bottom:10px;">UPDATES</h3>
   <div class="song">
-    many updates coming soon.
+    updates coming soon:
     <br><br>
-    im adding typing animations,<br>
+    typing animations,<br>
     more profile configs,<br>
-    fixing deleting button (making it serversided),<br>
-    and more.
+    and more when i think of them.
     </div>
   </div>
 </div>
@@ -386,6 +385,7 @@ let username=localStorage.getItem("username")||"PLAYER";
 let userPFP=localStorage.getItem("pfp")||"https://via.placeholder.com/36";
 let isOwner=false;
 let firstMessageLoaded=false;
+const renderedMessages = new Set();
 let lastNowPlaying = null; // tracks last track sent to chat
 
 // --- PAGE TITLE NOTIFICATIONS ---
@@ -477,18 +477,21 @@ window.sendMessage = () => {
 };
 
 onChildAdded(messagesQuery, snap => {
+  if (renderedMessages.has(snap.key)) return; // ignore duplicates
+
+  renderedMessages.add(snap.key);
+
   const m = snap.val();
 
   addMessage(
-  m.name || "PLAYER",
-  m.text || "",
-  m.img || "https://via.placeholder.com/36",
-  m.time || timeNow(),
-  snap.key,
-  m   
-);
+    m.name || "PLAYER",
+    m.text || "",
+    m.img || "https://via.placeholder.com/36",
+    m.time || timeNow(),
+    snap.key,
+    m
+  );
 
-  // 🔔 Update page title notifications
   if (!windowFocused && m.name !== username) {
     unreadCount++;
     document.title = `(${unreadCount}) ${originalTitle}`;
