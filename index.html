@@ -311,10 +311,10 @@ Not connected.
 <input type="color" id="colorPicker" value="#1e3a8a">
 <button class="tab-btn" id="setColorBtn">SET COLOR</button>
 
-<label>PROFILE LAYOUT BACKUP</label>
-<button class="tab-btn" id="exportLayoutBtn">EXPORT LAYOUT</button>
-<input type="file" accept="application/json" id="importLayoutUpload">
-<button class="tab-btn" id="importLayoutBtn">IMPORT LAYOUT</button>
+<label>PROFILE BACKUP (.JSON)</label>
+<button class="tab-btn" id="exportProfileBtn">EXPORT PROFILE</button>
+<input type="file" accept="application/json" id="importProfileUpload">
+<button class="tab-btn" id="importProfileBtn">IMPORT PROFILE</button>
 
 </div>
 
@@ -627,7 +627,7 @@ document.getElementById("setColorBtn").onclick = () => {
   alert("Profile color updated.");
 };
 
-function getProfileLayout() {
+function getProfileData() {
   return {
     username: localStorage.getItem("username") || "",
     displayName: localStorage.getItem("displayName") || "",
@@ -651,50 +651,67 @@ function hydrateProfileFields(layout) {
   document.getElementById("lastFmUsername").value = layout.lastFmUser || "";
 }
 
-document.getElementById("exportLayoutBtn").onclick = () => {
-  const layout = getProfileLayout();
-  const payload = JSON.stringify(layout, null, 2);
+function applyImportedProfile(profile) {
+  const fields = ["username", "displayName", "pronouns", "bio", "status", "banner", "profileColor", "pfp", "lastFmUser"];
+
+  fields.forEach(field => {
+    if (typeof profile[field] === "string") {
+      localStorage.setItem(field, profile[field]);
+    }
+  });
+
+  username = localStorage.getItem("username") || "PLAYER";
+  userPFP = localStorage.getItem("pfp") || "https://via.placeholder.com/36";
+
+  hydrateProfileFields(getProfileData());
+  updateLastFmPresence();
+
+  const restoredLastFmUser = localStorage.getItem("lastFmUser");
+  lastFmStatus.textContent = restoredLastFmUser
+    ? `Connected as ${restoredLastFmUser}`
+    : "Not connected.";
+}
+
+document.getElementById("exportProfileBtn").onclick = () => {
+  const profile = getProfileData();
+  const payload = JSON.stringify({
+    type: "wolfchat-profile",
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    profile
+  }, null, 2);
   const blob = new Blob([payload], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const downloadLink = document.createElement("a");
   downloadLink.href = url;
-  downloadLink.download = `${layout.username || "wolfchat"}-layout.json`;
+  downloadLink.download = `${profile.username || "wolfchat"}-profile.json`;
   document.body.appendChild(downloadLink);
   downloadLink.click();
   downloadLink.remove();
   URL.revokeObjectURL(url);
+  showStatusPopup("Profile exported.");
 };
 
-document.getElementById("importLayoutBtn").onclick = () => {
-  const file = document.getElementById("importLayoutUpload").files[0];
-  if (!file) return alert("Select a layout JSON file first.");
+document.getElementById("importProfileBtn").onclick = () => {
+  const file = document.getElementById("importProfileUpload").files[0];
+  if (!file) return alert("Select a profile JSON file first.");
 
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      const layout = JSON.parse(e.target.result);
+      const parsed = JSON.parse(e.target.result);
+      const profile = parsed?.type === "wolfchat-profile"
+        ? parsed.profile
+        : parsed;
 
-      const fields = ["username", "displayName", "pronouns", "bio", "status", "banner", "profileColor", "pfp", "lastFmUser"];
-      fields.forEach(field => {
-        if (typeof layout[field] === "string") {
-          localStorage.setItem(field, layout[field]);
-        }
-      });
+      if (!profile || typeof profile !== "object") {
+        throw new Error("Invalid profile payload");
+      }
 
-      username = localStorage.getItem("username") || "PLAYER";
-      userPFP = localStorage.getItem("pfp") || "https://via.placeholder.com/36";
-
-      hydrateProfileFields(getProfileLayout());
-      updateLastFmPresence();
-
-      const restoredLastFmUser = localStorage.getItem("lastFmUser");
-      lastFmStatus.textContent = restoredLastFmUser
-        ? `Connected as ${restoredLastFmUser}`
-        : "Not connected.";
-
-      alert("Layout imported successfully.");
+      applyImportedProfile(profile);
+      showStatusPopup("Profile imported.");
     } catch {
-      alert("Invalid layout file.");
+      alert("Invalid profile file.");
     }
   };
 
@@ -910,7 +927,7 @@ window.addEventListener("DOMContentLoaded", () => {
     updateLastFmPresence();
   }
 
-  hydrateProfileFields(getProfileLayout());
+  hydrateProfileFields(getProfileData());
 });
 
 </script>
