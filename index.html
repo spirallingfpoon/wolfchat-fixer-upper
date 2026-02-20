@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -252,7 +252,7 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
 <div class="settings-tabs">
 <button class="tab active" onclick="openTab('music')">MUSIC</button>
 <button class="tab" onclick="openTab('custom')">CUSTOM</button>
-<button class="tab" onclick="openTab('login')">LOGIN</button>
+<button class="tab" onclick="openTab('updates')">UPDATES</button>
 </div>
 
 <!-- MUSIC TAB -->
@@ -309,21 +309,18 @@ Not connected.
 
 </div>
 
-<!-- LOGIN TAB -->
-<div class="tab-content" id="login">
-<label>USERNAME</label>
-<input id="loginUsername">
-<span id="loginFeedback"></span>
-
-<label>PASSWORD</label>
-<input type="password" id="loginPassword">
-<button class="tab-btn" onclick="login()">LOGIN</button>
-
-<div id="ownerPanel" style="display:none;">
-<h3>Owner Panel</h3>
-<div class="user-list" id="userList"></div>
-</div>
-</div>
+<!-- UPDATES TAB -->
+<div class="tab-content" id="updates">
+  <h3 style="margin-bottom:10px;">UPDATES</h3>
+  <div class="song">
+    many updates coming soon.
+    <br><br>
+    im adding typing animations,<br>
+    more profile configs,<br>
+    fixing deleting button (making it serversided),<br>
+    and more.
+    </div>
+  </div>
 </div>
 
 <div class="chat-container">
@@ -535,33 +532,6 @@ window.saveProfile = () => {
 
   alert("Profile saved!");
 };
-
-/* Owner Login */
-const ownerUsername="wolf";
-const ownerPassword="katenlen1";
-const loginFeedback=document.getElementById("loginFeedback");
-const ownerPanel=document.getElementById("ownerPanel");
-const loginUsernameInput=document.getElementById("loginUsername");
-const loginPasswordInput=document.getElementById("loginPassword");
-
-function login(){
-const u=loginUsernameInput.value;
-const p=loginPasswordInput.value;
-if(u===ownerUsername&&p===ownerPassword){
-isOwner=true;
-loginFeedback.textContent="welcome owner!";
-loginFeedback.style.color="orange";
-ownerPanel.style.display="block";
-loginUsernameInput.style.display="none";
-loginPasswordInput.style.display="none";
-document.querySelector("#login button").style.display="none";
-}else{
-loginFeedback.textContent="incorrect.";
-loginFeedback.style.color="red";
-document.body.style.animation="shake 0.3s";
-setTimeout(()=>{ document.body.style.animation=""; },300);
-}
-}
 
 /* CUSTOM TAB BUTTONS */
 
