@@ -225,6 +225,20 @@ input[type="file"], input[type="text"], input[type="password"] { width: 100%; pa
   font-size: 16px;
 }
 
+.profile-display img,
+.profile-username img {
+  max-width: 75px;
+  max-height: 75px;
+  width: auto;
+  height: auto;
+  vertical-align: middle;
+}
+
+.profile-section img {
+  max-width: 100%;
+  height: auto;
+}
+
 .profile-username {
   font-size: 11px;
   opacity: 0.6;
@@ -720,11 +734,11 @@ if (data.banner) {
 } else {
   bannerDiv.style.background = "linear-gradient(135deg,#1e3a8a,#2563eb)";
 }
-  document.getElementById("profileDisplayName").textContent = data.displayName || data.name;
-  document.getElementById("profileUsername").textContent = "@" + data.name;
+  document.getElementById("profileDisplayName").innerHTML = data.displayName || data.name;
+  document.getElementById("profileUsername").innerHTML = "@" + data.name;
   document.getElementById("profilePronouns").textContent = data.pronouns || "";
   document.getElementById("profileStatus").textContent = data.status || "";
-  document.getElementById("profileBio").textContent = data.bio || "No bio set.";
+  document.getElementById("profileBio").innerHTML = data.bio || "No bio set.";
   document.querySelector(".profile-card").style.borderColor =
   data.profileColor || "#1e3a8a";
 
