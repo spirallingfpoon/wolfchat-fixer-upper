@@ -5,16 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>wolfchat.</title>
 
-<!-- Minecraftia font -->
-<link href="https://fonts.cdnfonts.com/css/minecraftia" rel="stylesheet">
-
 <style>
+@font-face {
+font-family: 'WolfchatCustom';
+src: url('https://files.catbox.moe/tn9241.ttf') format('truetype');
+font-display: swap;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
 width: 100%;
 height: 100%;
-font-family: 'Minecraftia', monospace;
+font-family: 'WolfchatCustom', monospace;
 background: black;
 color: #c7d2fe;
 overflow: hidden;
@@ -54,7 +57,7 @@ flex-direction: column;
 justify-content: center;
 align-items: center;
 color: #c7d2fe;
-font-family: 'Minecraftia', monospace;
+font-family: 'WolfchatCustom', monospace;
 font-size: 14px;
 z-index: 1000;
 transition: opacity 0.5s ease;
@@ -797,7 +800,7 @@ function showStatusPopup(message, duration=1500) {
     popup.style.border = "2px solid #1e3a8a";
     popup.style.padding = "10px 14px";
     popup.style.borderRadius = "6px";
-    popup.style.fontFamily = "'Minecraftia', monospace";
+    popup.style.fontFamily = "'WolfchatCustom', monospace";
     popup.style.color = "#c7d2fe";
     popup.style.zIndex = 3000;
     popup.style.opacity = 0;
